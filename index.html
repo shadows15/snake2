@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Snake V0</title>
+      <style type="text/css">
+          *{margin: 0;padding: 0;box-sizing: border-box}
+        body {
+            font-family: sans-serif;
+          }
+       canvas {
+           display: block;
+           margin:  0 auto;
+           background: #2b2b2b;
+        }
+        h1 {
+            text-align: center;
+            color: #2b2b2b;
+            margin: 10px 0;
+            font-size: 50px;
+        }
+        p{
+            text-align: center;
+            color: #616264;
+            margin: 20px 0 ;
+        }
+    </style>
+</head>
+<body>
+    <h1>SNAKE V0</h1>
+    <p>By Ghiles Rabah</p>
+    <canvas id="mycanvas" onLoad="setH"></canvas>
+    <script>
+
+        var canvas = document.getElementById("mycanvas");
+        canvas.width = window.innerWidth * 2/3;
+        canvas.height = window.innerHeight * 2/3;
+        var ctx = canvas.getContext('2d');
+        
+        /** snake **/
+        var radius = 8;
+        var x = Math.floor(Math.random() * ( (canvas.width - 200) - 200) + 200);
+        var y = Math.floor(Math.random() * ( (canvas.height - 200) - 200) + 200);
+        var dx = 3;
+        var direction = 0;
+        
+        
+        /** food **/
+        
+        var x2 = Math.floor(Math.random() * ( (canvas.width - 10) - 10) + 10);
+        var y2 = Math.floor(Math.random() * ( (canvas.height - 10) - 10) + 10);
+        
+        function newFoodPosition(){
+            
+            x2 =  Math.floor(Math.random() * ( (canvas.width - 10) - 10) + 10);
+            y2 = Math.floor(Math.random() * ( (canvas.height - 10) - 10) + 10);
+            
+        }
+        
+        var score = 0;
+        var timM = 0;
+        var timS = 0;
+        var end = 0;
+        var level = 1;
+        var counter = 0;
+        
+        
+        function animate() {
+            if ( end == 0 ){
+                gameOver(timM,timS);
+                return false;
+            }
+            /** snake logic **/
+            if ( direction == 0){   
+                x += dx;
+            }else if( direction == 1 ){
+                y += dx;
+            }
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.rect(x, y, radius, radius);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+            ctx.closePath();
+
+            if ( x + radius > canvas.width || x < 0 || y + radius > canvas.height ||  y < 0 ){
+                end = 0;
+            }
+            
+            /** food logic **/
+            ctx.beginPath();
+            ctx.rect(x2, y2, radius, radius);
+            ctx.fillStyle = "green";
+            ctx.fill();
+            ctx.closePath();
+            
+            
+            /** colision test **/
+            if (   x - 4 < x2 + 4 
+                && x + 4 > x2 - 4  
+                && y - 4 < y2 + 4 
+                && y + 4 > y2 - 4 ){
+                newFoodPosition();
+                score += 5;
+                counter++
+                if ( counter == 3 ){
+                    level++;
+                    counter = 0;   
+                    if ( dx > 0){
+                        dx = dx + 0.5;
+                    }else if( dx < 0){
+                        dx = dx - 0.5;
+                    }
+                }
+            }
+            
+            /** score text **/
+            ctx.beginPath();
+            ctx.font = "15px Arial";
+            ctx.fillStyle = "red";
+            ctx.fillText("Score : "+score,30,30);
+            ctx.closePath();
+            
+            
+            /** time text **/
+            ctx.beginPath();
+            ctx.font = "15px Arial";
+            ctx.fillStyle = "red";
+            ctx.fillText("Time : "+timeFunction(timS,timM),110,30);
+            ctx.closePath();
+            
+            /** level text **/
+            ctx.beginPath();
+            ctx.font = "15px Arial";
+            ctx.fillStyle = "red";
+            ctx.fillText("Level : "+level,230,30);
+            ctx.closePath();
+            
+        }
+        
+        document.addEventListener("keydown", function(e) {
+            e = e || window.event;
+            if (e.keyCode == '38') {
+                /** UP **/
+                direction = 1;
+                if ( dx > 0 ){
+                    dx = dx * (-1);
+                }
+            } else if (e.keyCode == '40') {
+                /** DOWN **/
+                direction = 1;
+                if ( dx < 0 ){
+                    dx = dx * (-1);
+                }
+            } else if (e.keyCode == '37') {
+                /** LEFT **/
+                direction = 0;
+                if ( dx > 0 ){
+                    dx = dx * (-1);
+                }
+            } else if (e.keyCode == '39') {
+                /** RIGHT **/
+                direction = 0;
+                if ( dx < 0 ){
+                    dx = dx * (-1);
+                }
+            } else if( e.keyCode == '32' ){
+                if ( end == 0 ){
+                end = level =1;
+                direction = score = timM = timS = counter = 0;
+                x = Math.floor(Math.random() * ( (canvas.width - 200) - 200) + 200);
+                y = Math.floor(Math.random() * ( (canvas.height - 200) - 200) + 200);
+                dx = 3;
+                newFoodPosition();
+                animate();
+                }
+            }
+        });
+        setInterval(upDateTime,1000);
+        function upDateTime(){
+            timS++;
+        }
+        function timeFunction(ss, mm){
+            var seconde = ss;
+            var minute = mm;
+            if ( ss == 60 ){
+                timS = 0;
+                timM++;
+            }
+            if ( ss < 10 ){
+                seconde = "0"+ss;
+            }
+            if (mm < 10 ){
+                minute = "0"+minute;
+            }
+            return minute+" : "+seconde;
+        }
+        function getLevel(){
+            if ( level < 5){
+                return "NOVICE";
+            }else if( level < 10 ){
+                return "BEGINNER";
+            }else if( level < 15 ){
+                return "INTERMEDIAR";  
+            }else if( level < 20 ){
+                return "PROFECIONAL";  
+            }else if( level < 25 ){
+                return "EXPERT"; 
+            }else if( level >= 25 ){
+                return "RABAH";  
+            }
+        }
+        function gameOver(mm,ss){
+            
+            /** score text **/
+            ctx.beginPath();
+            ctx.font = "40px Arial";
+            ctx.fillStyle = "red";
+            ctx.fillText("NIVEAU : "+getLevel(),(canvas.width / 2 ) - (canvas.width - 740),(canvas.width / 2) - (canvas.height - 100));
+            ctx.closePath();
+            
+            
+            /** game over text **/
+            ctx.beginPath();
+            ctx.font = "80px Arial";
+            ctx.fillStyle = "#fff";
+            ctx.fillText("GAME OVER",(canvas.width / 2 ) - (canvas.width - 650),(canvas.width / 2) - (canvas.height - 180));
+            ctx.closePath();
+            
+            /** score text **/
+            ctx.beginPath();
+            ctx.font = "15px Arial";
+            ctx.fillText("Vous avez fait un score de : "+score+" point(s)",(canvas.width / 2 ) - (canvas.width - 750),(canvas.width / 2) - (canvas.height - 210));
+            ctx.closePath();
+            
+            /** time text **/
+            ctx.beginPath();
+            ctx.font = "15px Arial";
+            ctx.fillText("en : "+mm+" minute(s), et : "+ss+" seconde(s)",(canvas.width / 2 ) - (canvas.width - 750),(canvas.width / 2) - (canvas.height - 235));
+            ctx.closePath();
+            
+            /** info text **/
+            ctx.beginPath();
+            ctx.font = "15px Arial";
+            ctx.fillText("apuyer sur 'ESPACE' pour recomencer",(canvas.width / 2 ) - (canvas.width - 750),(canvas.width / 2) - (canvas.height - 265));
+            ctx.closePath();
+        }
+        function startGame(){
+            ctx.beginPath();
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "#fff";
+            ctx.fillText("APUYER SUR",(canvas.width / 2 ) - (canvas.width - 795),(canvas.width / 2) - (canvas.height - 140));
+            ctx.closePath();
+            
+            ctx.beginPath();
+            ctx.font = "35px Arial";
+            ctx.fillStyle = "red";
+            ctx.fillText("ESPACE",(canvas.width / 2 ) - (canvas.width - 830),(canvas.width / 2) - (canvas.height - 185));
+            ctx.closePath();
+            
+            ctx.beginPath();
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "#fff";
+            ctx.fillText("POUR COMMENCER",(canvas.width / 2 ) - (canvas.width - 750),(canvas.width / 2) - (canvas.height - 230));
+            ctx.closePath();
+        }
+        startGame();
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    </script>
+</body>
+</html>
